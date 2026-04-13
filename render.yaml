@@ -8,7 +8,7 @@ services:
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
-        value: postgresql://neondb_owner:npg_f3SKZXPQvF0N@ep-dawn-recipe-a1bd62ap.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+        value: postgresql://budget_user:kWql5hpyWjR3lS0L4mHP55Sy1muhtUmx@dpg-d7encf77f7vs73bn89d0-a/budget_platform
       - key: FRONTEND_URL
         value: https://budget-platform-iba.netlify.app
       - key: ZOHO_CLIENT_ID

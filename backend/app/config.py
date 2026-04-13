@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "postgresql://neondb_owner:npg_f3SKZXPQvF0N@ep-dawn-recipe-a1bd62ap.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+    DATABASE_URL: str = "postgresql://budget_user:kWql5hpyWjR3lS0L4mHP55Sy1muhtUmx@dpg-d7encf77f7vs73bn89d0-a/budget_platform"
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
     SECRET_KEY: str = secrets.token_urlsafe(32)
