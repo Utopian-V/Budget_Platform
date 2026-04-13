@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
-import { Upload, Loader2, CheckCircle2, Clock, Shield, Key, RefreshCw, AlertCircle } from 'lucide-react';
-import { importSpecific, getZohoStatus, syncZohoAll, syncZohoInvoices, syncZohoSalesOrders, syncZohoCreditNotes } from '../lib/api';
+import { useState, useEffect, useRef } from 'react';
+import { Upload, Loader2, CheckCircle2, Clock, Shield, Key, RefreshCw, AlertCircle, FileUp } from 'lucide-react';
+import { importSpecific, uploadAndImport, getZohoStatus, syncZohoAll, syncZohoInvoices, syncZohoSalesOrders, syncZohoCreditNotes } from '../lib/api';
 import { cn } from '../lib/utils';
 
 const IMPORT_TYPES = [
-  { key: 'budget', label: 'Budget Sheet', description: 'Import budget lines and expected values' },
-  { key: 'invoices', label: 'Invoices', description: 'Import invoice data from Excel files' },
-  { key: 'sales-orders', label: 'Sales Orders', description: 'Import sales order data' },
-  { key: 'credit-notes', label: 'Credit Notes', description: 'Import credit note adjustments' },
-  { key: 'proposals', label: 'Proposals', description: 'Import proposal/pipeline data' },
+  { key: 'budget', label: 'Budget Sheet', description: 'Upload and import Budget Sheet 2025-26.xlsx', accept: '.xlsx,.xls' },
+  { key: 'invoices', label: 'Invoices', description: 'Upload invoice Excel exports', accept: '.xlsx,.xls' },
+  { key: 'sales-orders', label: 'Sales Orders', description: 'Upload sales order Excel exports', accept: '.xlsx,.xls' },
+  { key: 'credit-notes', label: 'Credit Notes', description: 'Upload credit note Excel exports', accept: '.xlsx,.xls' },
+  { key: 'proposals', label: 'Proposals', description: 'Upload Proposal FY 25-26 Excel', accept: '.xlsx,.xls' },
 ] as const;
 
 const ZOHO_SYNC_TYPES = [
@@ -22,14 +22,15 @@ type ImportKey = (typeof IMPORT_TYPES)[number]['key'];
 interface ImportStatus {
   loading: boolean;
   success: boolean;
-  error: boolean;
+  error: string | null;
   time: string | null;
 }
 
 export default function Settings() {
+  const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [importStatuses, setImportStatuses] = useState<Record<ImportKey, ImportStatus>>(
     Object.fromEntries(
-      IMPORT_TYPES.map(({ key }) => [key, { loading: false, success: false, error: false, time: null }])
+      IMPORT_TYPES.map(({ key }) => [key, { loading: false, success: false, error: null, time: null }])
     ) as Record<ImportKey, ImportStatus>
   );
 
@@ -42,21 +43,42 @@ export default function Settings() {
     getZohoStatus().then((res) => setZohoStatus(res.data)).catch(() => {});
   }, []);
 
-  const handleImport = async (key: ImportKey) => {
+  const handleFileUpload = async (key: ImportKey, file: File) => {
     setImportStatuses((prev) => ({
       ...prev,
-      [key]: { loading: true, success: false, error: false, time: null },
+      [key]: { loading: true, success: false, error: null, time: null },
+    }));
+    try {
+      await uploadAndImport(key, file);
+      setImportStatuses((prev) => ({
+        ...prev,
+        [key]: { loading: false, success: true, error: null, time: new Date().toLocaleTimeString() },
+      }));
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Import failed';
+      setImportStatuses((prev) => ({
+        ...prev,
+        [key]: { loading: false, success: false, error: msg, time: null },
+      }));
+    }
+  };
+
+  const handleImportFromServer = async (key: ImportKey) => {
+    setImportStatuses((prev) => ({
+      ...prev,
+      [key]: { loading: true, success: false, error: null, time: null },
     }));
     try {
       await importSpecific(key);
       setImportStatuses((prev) => ({
         ...prev,
-        [key]: { loading: false, success: true, error: false, time: new Date().toLocaleTimeString() },
+        [key]: { loading: false, success: true, error: null, time: new Date().toLocaleTimeString() },
       }));
-    } catch {
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Import failed';
       setImportStatuses((prev) => ({
         ...prev,
-        [key]: { loading: false, success: false, error: true, time: null },
+        [key]: { loading: false, success: false, error: msg, time: null },
       }));
     }
   };
@@ -100,12 +122,12 @@ export default function Settings() {
 
   return (
     <div className="max-w-3xl space-y-8">
-      {/* Import Data */}
+      {/* Upload & Import Data */}
       <section>
-        <h2 className="text-lg font-bold text-slate-900 mb-1">Import Data (Excel)</h2>
-        <p className="text-sm text-slate-500 mb-4">Import data from uploaded Excel files on the server</p>
+        <h2 className="text-lg font-bold text-slate-900 mb-1">Upload & Import Data</h2>
+        <p className="text-sm text-slate-500 mb-4">Upload Excel files to import data into the platform</p>
         <div className="space-y-3">
-          {IMPORT_TYPES.map(({ key, label, description }) => {
+          {IMPORT_TYPES.map(({ key, label, description, accept }) => {
             const st = importStatuses[key];
             return (
               <div
@@ -117,33 +139,53 @@ export default function Settings() {
                   <p className="text-xs text-slate-500 mt-0.5">{description}</p>
                   {st.time && (
                     <div className="flex items-center gap-1.5 mt-1.5">
-                      <Clock className="w-3 h-3 text-slate-400" />
-                      <span className="text-xs text-slate-400">Last imported: {st.time}</span>
+                      <Clock className="w-3 h-3 text-green-500" />
+                      <span className="text-xs text-green-600 font-medium">Imported at {st.time}</span>
                     </div>
                   )}
                   {st.error && (
                     <div className="flex items-center gap-1.5 mt-1.5">
                       <AlertCircle className="w-3 h-3 text-red-400" />
-                      <span className="text-xs text-red-500">Import failed</span>
+                      <span className="text-xs text-red-500">Error: {st.error}</span>
                     </div>
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {st.success && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                  {st.loading && <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />}
+
+                  <input
+                    type="file"
+                    accept={accept}
+                    ref={(el) => { fileRefs.current[key] = el; }}
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileUpload(key, file);
+                      e.target.value = '';
+                    }}
+                  />
                   <button
-                    onClick={() => handleImport(key)}
+                    onClick={() => fileRefs.current[key]?.click()}
                     disabled={st.loading}
                     className={cn(
                       'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors',
                       'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60'
                     )}
                   >
-                    {st.loading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Upload className="w-4 h-4" />
+                    <FileUp className="w-4 h-4" />
+                    Upload
+                  </button>
+                  <button
+                    onClick={() => handleImportFromServer(key)}
+                    disabled={st.loading}
+                    title="Re-import from previously uploaded file"
+                    className={cn(
+                      'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors',
+                      'bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-60'
                     )}
-                    Import
+                  >
+                    <Upload className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -157,7 +199,6 @@ export default function Settings() {
         <h2 className="text-lg font-bold text-slate-900 mb-1">Zoho Books Integration</h2>
         <p className="text-sm text-slate-500 mb-4">Sync live data from Zoho Books API</p>
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 space-y-5">
-          {/* Status */}
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-lg bg-orange-50">
               <Key className="w-6 h-6 text-orange-600" />
@@ -180,7 +221,6 @@ export default function Settings() {
 
           {zohoStatus?.configured && (
             <>
-              {/* Sync All */}
               <div className="pt-3 border-t border-slate-100">
                 <button
                   onClick={handleZohoSyncAll}
@@ -196,7 +236,6 @@ export default function Settings() {
                 </button>
               </div>
 
-              {/* Individual Sync */}
               <div className="space-y-3">
                 {ZOHO_SYNC_TYPES.map(({ key, label, fn }) => {
                   const syncing = zohoSyncing[key];

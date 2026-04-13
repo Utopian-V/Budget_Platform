@@ -66,6 +66,14 @@ export const deleteMasterItem = (type: string, id: number) => api.delete(`/maste
 // Import
 export const importAll = () => api.post('/import/all');
 export const importSpecific = (type: string) => api.post(`/import/${type}`);
+export const uploadAndImport = (dataType: string, file: File) => {
+  const form = new FormData();
+  form.append('file', file);
+  return api.post(`/import/upload/${dataType}`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 300000,
+  });
+};
 
 // Zoho
 export const getZohoStatus = () => api.get('/zoho/status');
