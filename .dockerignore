@@ -1,0 +1,15 @@
+node_modules
+__pycache__
+*.pyc
+.env
+backend/.env
+backend/data/
+frontend/node_modules
+frontend/dist
+.git
+*.xlsx
+*.docx
+Reports/
+Zoho Exports/
+Proposal Deployment/
+*.md
