@@ -35,7 +35,7 @@ export default function Invoices() {
   const [totalCount, setTotalCount] = useState(0);
   const [summary, setSummary] = useState<InvoiceSummaryData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [month, setMonth] = useState(MONTHS[0]);
+  const [month, setMonth] = useState<string>(MONTHS[0]);
   const [status, setStatus] = useState('');
   const [customerSearch, setCustomerSearch] = useState('');
   const [billingEntity, setBillingEntity] = useState('');

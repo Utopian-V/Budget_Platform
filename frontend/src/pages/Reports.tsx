@@ -51,7 +51,7 @@ type Tab = (typeof TABS)[number];
 
 export default function Reports() {
   const [activeTab, setActiveTab] = useState<Tab>('Department Variance');
-  const [month, setMonth] = useState(MONTHS[0]);
+  const [month, setMonth] = useState<string>(MONTHS[0]);
   const [loading, setLoading] = useState(true);
 
   const [deptVariance, setDeptVariance] = useState<DeptVariance[]>([]);
@@ -191,7 +191,7 @@ export default function Reports() {
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                       <XAxis dataKey="department" tick={{ fontSize: 11 }} stroke="#94a3b8" angle={-20} textAnchor="end" height={60} />
                       <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" tickFormatter={(v: number) => `₹${(v / 100000).toFixed(0)}L`} />
-                      <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0' }} />
+                      <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0' }} />
                       <Legend />
                       <Bar dataKey="total_expected" fill="#2563eb" radius={[4, 4, 0, 0]} name="Expected" />
                       <Bar dataKey="total_actual" fill="#16a34a" radius={[4, 4, 0, 0]} name="Actual" />

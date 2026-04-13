@@ -34,7 +34,7 @@ interface NewAdditionItem {
 }
 
 export default function Reconciliation() {
-  const [month, setMonth] = useState(MONTHS[0]);
+  const [month, setMonth] = useState<string>(MONTHS[0]);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
   const [summary, setSummary] = useState<RecoSummary | null>(null);

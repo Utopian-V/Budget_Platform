@@ -8,3 +8,6 @@ frontend/dist/
 *.xlsx
 *.docx
 .DS_Store
+
+# Local Netlify folder
+.netlify

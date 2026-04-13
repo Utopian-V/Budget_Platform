@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { type ColumnDef } from '@tanstack/react-table';
-import { ChevronDown, ChevronRight, Loader2, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, Search } from 'lucide-react';
 import DataTable from '../components/DataTable';
 import { getBudgetLines, updateVariance, getMasterData } from '../lib/api';
 import { formatCurrency, cn, MONTHS } from '../lib/utils';

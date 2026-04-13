@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: budget-platform-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:////data/budget_platform.db
+      - key: FRONTEND_URL
+        value: https://budget-platform-iba.netlify.app
+      - key: ZOHO_CLIENT_ID
+        sync: false
+      - key: ZOHO_CLIENT_SECRET
+        sync: false
+      - key: ZOHO_ORG_ID
+        sync: false
+      - key: ZOHO_REFRESH_TOKEN
+        sync: false

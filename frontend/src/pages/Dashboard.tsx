@@ -111,7 +111,7 @@ export default function Dashboard() {
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="#94a3b8" />
             <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" tickFormatter={(v: number) => `₹${(v / 100000).toFixed(0)}L`} />
-            <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0' }} />
+            <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0' }} />
             <Legend />
             <Line type="monotone" dataKey="expected" stroke="#2563eb" strokeWidth={2.5} dot={{ r: 4 }} name="Expected" />
             <Line type="monotone" dataKey="actual" stroke="#16a34a" strokeWidth={2.5} dot={{ r: 4 }} name="Actual" />
