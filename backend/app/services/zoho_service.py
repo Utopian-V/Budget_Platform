@@ -46,7 +46,7 @@ class ZohoClient:
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.post(
                 ZOHO_ACCOUNTS_URL,
-                params={
+                data={
                     "refresh_token": self.refresh_token,
                     "client_id": self.client_id,
                     "client_secret": self.client_secret,
@@ -57,6 +57,22 @@ class ZohoClient:
             data = resp.json()
             self.access_token = data["access_token"]
             logger.info("Zoho access token refreshed successfully")
+
+    async def exchange_code_for_tokens(self, code: str, redirect_uri: str) -> dict:
+        """Exchange a Zoho auth code for access and refresh tokens."""
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(
+                ZOHO_ACCOUNTS_URL,
+                data={
+                    "code": code,
+                    "client_id": self.client_id,
+                    "client_secret": self.client_secret,
+                    "redirect_uri": redirect_uri,
+                    "grant_type": "authorization_code",
+                },
+            )
+            resp.raise_for_status()
+            return resp.json()
 
     def _headers(self) -> dict:
         return {

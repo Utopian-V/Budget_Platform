@@ -1,8 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.services.zoho_service import zoho_client, sync_invoices, sync_sales_orders, sync_credit_notes
+from app.services.zoho_service import (
+    zoho_client,
+    sync_invoices,
+    sync_sales_orders,
+    sync_credit_notes,
+)
 
 router = APIRouter(prefix="/api/zoho", tags=["Zoho Integration"])
 
@@ -10,6 +15,33 @@ router = APIRouter(prefix="/api/zoho", tags=["Zoho Integration"])
 @router.get("/status")
 def zoho_status():
     return zoho_client.get_status()
+
+
+@router.get("/callback")
+async def zoho_callback(request: Request):
+    error = request.query_params.get("error")
+    if error:
+        raise HTTPException(status_code=400, detail=error)
+
+    code = request.query_params.get("code")
+    if not code:
+        raise HTTPException(status_code=400, detail="Missing Zoho authorization code")
+
+    if not zoho_client.client_id or not zoho_client.client_secret:
+        raise HTTPException(status_code=400, detail="Zoho client credentials not configured")
+
+    redirect_uri = str(request.url.replace(query=""))
+
+    try:
+        tokens = await zoho_client.exchange_code_for_tokens(code, redirect_uri)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Token exchange failed: {str(e)}")
+
+    return {
+        "status": "ok",
+        "redirect_uri": redirect_uri,
+        "tokens": tokens,
+    }
 
 
 @router.post("/sync/invoices")
