@@ -10,7 +10,7 @@ services:
       - key: DATABASE_URL
         value: postgresql://budget_user:kWql5hpyWjR3lS0L4mHP55Sy1muhtUmx@dpg-d7encf77f7vs73bn89d0-a/budget_platform
       - key: FRONTEND_URL
-        value: https://budget-platform-iba.netlify.app
+        value: https://budget.ibadvisors.co
       - key: ZOHO_CLIENT_ID
         sync: false
       - key: ZOHO_CLIENT_SECRET
